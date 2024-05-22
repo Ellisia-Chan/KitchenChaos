@@ -3,13 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
-{
+public class Player : MonoBehaviour {
     public static Player Instance { get; private set; }
 
     public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
-    public class OnSelectedCounterChangedEventArgs : EventArgs
-    {
+    public class OnSelectedCounterChangedEventArgs : EventArgs {
         public ClearCounter selectedCounter;
     }
 
@@ -21,73 +19,56 @@ public class Player : MonoBehaviour
     private Vector3 lastInteractDir;
     private ClearCounter selectedCounter;
 
-    public void Awake()
-    {
-        if (Instance != null)
-        {
+    public void Awake() {
+        if (Instance != null) {
             Debug.Log("There is more than one Player Instance");
         }
         Instance = this;
     }
 
-    private void Start()
-    {
+    private void Start() {
         gameInput.OnInteractAction += GameInput_OnInteractAction;
     }
 
-    private void GameInput_OnInteractAction(object sender, System.EventArgs e)
-    {
-        if (selectedCounter != null)
-        {
+    private void GameInput_OnInteractAction(object sender, System.EventArgs e) {
+        if (selectedCounter != null) {
             selectedCounter.Interact();
         }
     }
 
-    private void Update()
-    {
+    private void Update() {
         HandleMovement();
         HandleInteractions();
     }
 
-    public bool IsWalking()
-    {
+    public bool IsWalking() {
         return isWalking;
     }
 
-    private void HandleInteractions()
-    {
+    private void HandleInteractions() {
         Vector2 inputVector = gameInput.GetMovementVectorNormalized();
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
 
-        if (moveDir != Vector3.zero)
-        {
+        if (moveDir != Vector3.zero) {
             lastInteractDir = moveDir;
         }
 
         float interactDistance = 2f;
-        if (Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, counterLayerMask))
-        {
-            if (raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
-            {
+        if (Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, counterLayerMask)) {
+            if (raycastHit.transform.TryGetComponent(out ClearCounter clearCounter)) {
                 // Has ClearCounter
-                if (clearCounter != selectedCounter)
-                {
+                if (clearCounter != selectedCounter) {
                     SetSelectedCounter(clearCounter);
                 }
-            }
-            else
-            {
+            } else {
                 SetSelectedCounter(null);
             }
-        }
-        else
-        {
+        } else {
             SetSelectedCounter(null);
         }
     }
 
-    private void HandleMovement()
-    {
+    private void HandleMovement() {
         Vector2 inputVector = gameInput.GetMovementVectorNormalized();
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
 
@@ -96,34 +77,27 @@ public class Player : MonoBehaviour
         float playerHeight = 2f;
         bool canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDir, moveDistance);
 
-        if (!canMove)
-        {
+        if (!canMove) {
             // Cannot Move Towards modeDir
 
             // Attemp only X Movement
             Vector3 moveDirX = new Vector3(moveDir.x, 0, 0).normalized;
             canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirX, moveDistance);
 
-            if (canMove)
-            {
+            if (canMove) {
                 // Can Move only on the X
                 moveDir = moveDirX;
-            }
-            else
-            {
+            } else {
                 // Cannot Move only on the X
 
                 // Attempt only Z Movement
                 Vector3 moveDirZ = new Vector3(0, 0, moveDir.z).normalized;
                 canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirZ, moveDistance);
 
-                if (canMove)
-                {
+                if (canMove) {
                     // Can Move only on the Z
                     moveDir = moveDirZ;
-                }
-                else
-                {
+                } else {
                     // Cannot Move in any Direction
                 }
 
@@ -131,8 +105,7 @@ public class Player : MonoBehaviour
 
         }
 
-        if (canMove)
-        {
+        if (canMove) {
             transform.position += moveDir * moveSpeed * Time.deltaTime;
         }
 
@@ -141,12 +114,10 @@ public class Player : MonoBehaviour
         transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * roatateSpeed);
     }
 
-    private void SetSelectedCounter(ClearCounter selectedCounter)
-    {
+    private void SetSelectedCounter(ClearCounter selectedCounter) {
         this.selectedCounter = selectedCounter;
 
-        OnSelectedCounterChanged?.Invoke(this, new OnSelectedCounterChangedEventArgs
-        {
+        OnSelectedCounterChanged?.Invoke(this, new OnSelectedCounterChangedEventArgs {
             selectedCounter = selectedCounter
         });
     }
