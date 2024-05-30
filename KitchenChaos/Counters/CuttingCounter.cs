@@ -8,7 +8,7 @@ public class CuttingCounter : BaseCounter, IHasProgress {
 
     public event EventHandler<IHasProgress.OnProgressChangedEventArgs> OnProgressChanged;
     public event EventHandler OnCut;
-    
+
     [SerializeField] private CuttingRecipeSO[] cuttingRecipeSOArray;
 
 
@@ -38,7 +38,13 @@ public class CuttingCounter : BaseCounter, IHasProgress {
         } else {
             // There is a KitchenObject here
             if (player.HasKitchenObject()) {
-                // Player is carrying something             
+                // Player is carrying something 
+                if (player.GetKitchenObject().TryGetPlate(out PlateKitchenObject plateKitchenObejct)) {
+                    // Player is holding a plate
+                    if (plateKitchenObejct.TryAddIngredient(GetKitchenObject().GetKitchenObjectSO())) {
+                        GetKitchenObject().DestroySelf();
+                    }
+                }
             } else {
                 // Player is not carryign anything
                 GetKitchenObject().SetKitchenObjectParent(player);
